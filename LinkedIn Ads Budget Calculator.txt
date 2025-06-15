@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Ads Budget Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0077b5 0%, #005885 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #CFEDFB;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00A0DC, #008CC9);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+        }
+
+        .results-section {
+  background: linear-gradient(
+    135deg,
+    #69CDCF 0%,   /* Use a mid blue instead of pale */
+    #009EA5 50%,
+    #005C69 100%
+  );
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 92, 105, 0.3);
+  text-shadow: 0 1px 6px rgba(0,92,105,0.10);
+}
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #00A0DC;
+            box-shadow: 0 0 0 3px rgba(0, 160, 220, 0.2);
+        }
+
+        .campaign-type {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .campaign-type label {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+
+        .campaign-type input[type="radio"] {
+            margin-right: 8px;
+            width: auto;
+        }
+
+        .campaign-type label:hover {
+            border-color: #69CDCF;
+            background: #E0F4BE;
+        }
+
+        .campaign-type input[type="radio"]:checked + span {
+            color: #0077b5;
+            font-weight: 600;
+        }
+
+        .results-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .result-card {
+            background: rgba(207, 237, 251, 0.15);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .result-card h3 {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 2em;
+            font-weight: 300;
+            margin-bottom: 5px;
+        }
+
+        .result-subtitle {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .benchmark-info {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #0077b5;
+        }
+
+        .benchmark-info h3 {
+            color: #0077b5;
+            margin-bottom: 10px;
+        }
+
+        .benchmark-info p {
+            color: #495057;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="">
+        <div class="header">
+            <h1>LinkedIn Ads Budget Calculator</h1>
+            <p>Calculate your LinkedIn advertising budget based on industry benchmarks</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <h2 style="margin-bottom: 30px; color: #495057;">Campaign Details</h2>
+                
+                <div class="form-group">
+                    <label for="campaignType">Campaign Objective</label>
+                    <div class="campaign-type">
+                        <label>
+                            <input type="radio" name="campaignType" value="awareness" checked>
+                            <span>Brand Awareness</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="campaignType" value="leads">
+                            <span>Lead Generation</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="campaignType" value="website">
+                            <span>Website Visits</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="campaignType" value="engagement">
+                            <span>Engagement</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetAudience">Target Audience Size</label>
+                    <select id="targetAudience">
+                        <option value="small">Small (10K - 100K)</option>
+                        <option value="medium" selected>Medium (100K - 500K)</option>
+                        <option value="large">Large (500K - 1M+)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="industry">Industry</label>
+                    <select id="industry">
+                        <option value="technology" selected>Technology</option>
+                        <option value="finance">Financial Services</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="education">Education</option>
+                        <option value="consulting">Consulting</option>
+                        <option value="manufacturing">Manufacturing</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="campaignDuration">Campaign Duration (days)</label>
+                    <input type="number" id="campaignDuration" value="30" min="1" max="365">
+                </div>
+
+                <div class="form-group">
+                    <label for="targetLeads">Target Leads/Conversions</label>
+                    <input type="number" id="targetLeads" value="100" min="1">
+                </div>
+
+                <div class="benchmark-info">
+                    <h3>2025 LinkedIn Ads Performance Data</h3>
+                    <p id="benchmarkText">LinkedIn Lead Generation campaigns show CPM of $62, CTR of 0.42%, CVR of 4.2%.</p>
+                    
+                                    </div>
+            </div>
+
+            <div class="results-section">
+                <h2 style="margin-bottom: 30px;">Budget Recommendations</h2>
+                
+                <div class="results-grid">
+                    <div class="result-card">
+                        <h3>Recommended Daily Budget</h3>
+                        <div class="result-value" id="dailyBudget">$50</div>
+                        <div class="result-subtitle">Per day</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Total Campaign Budget</h3>
+                        <div class="result-value" id="totalBudget">$1,500</div>
+                        <div class="result-subtitle">Full campaign</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Expected Impressions</h3>
+                        <div class="result-value" id="expectedImpressions">187K</div>
+                        <div class="result-subtitle">Total reach</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Expected Clicks</h3>
+                        <div class="result-value" id="expectedClicks">730</div>
+                        <div class="result-subtitle">Website visits</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Expected Leads</h3>
+                        <div class="result-value" id="expectedLeads">29</div>
+                        <div class="result-subtitle">Conversions</div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Cost Per Lead</h3>
+                        <div class="result-value" id="costPerLead">$52</div>
+                        <div class="result-subtitle">Average CPL</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // *** LEGAL-APPROVED BENCHMARKS - 2025 DATA ***
+        const benchmarks = {
+    awareness: { 
+        cpm: 57,
+        ctr: 0.50,    // 0.44-0.56%, using 0.50% as midpoint
+        cvr: 1.8,
+        cpc: 9
+    },
+    leads: { 
+        cpm: 62,
+        ctr: 0.50,    // 0.44-0.56%, using 0.50% as midpoint
+        cvr: 4.2,
+        cpc: 15
+    },
+    website: { 
+        cpm: 55,
+        ctr: 0.50,    // 0.44-0.56%, using 0.50% as midpoint
+        cvr: 2.5,
+        cpc: 8
+    },
+    engagement: { 
+        cpm: 52,
+        ctr: 0.65,    // 0.65%, with note for high performers
+        cvr: 2.1,
+        cpc: 7
+    }
+};
+
+        // *** PERFORMANCE MULTIPLIERS BY CAMPAIGN TYPE ***
+        // Based on approved pipeline influence data
+        const pipelineInfluence = {
+            awareness: { mql: 0.29, sql: 0.36, newbiz: 0.35 },  // LinkedIn's pipeline influence
+            leads: { mql: 0.48, sql: 0.53, newbiz: 0.53 },      // Top quartile performance
+            website: { mql: 0.29, sql: 0.36, newbiz: 0.35 },    // Similar to awareness
+            engagement: { mql: 0.29, sql: 0.36, newbiz: 0.35 }  // Standard influence
+        };
+
+        // *** INDUSTRY MULTIPLIERS - Based on 2025 data ***
+        const industryMultipliers = {
+            technology: 1.0,      // Baseline - tech sector
+            finance: 1.25,        // Higher competition in finance
+            healthcare: 1.15,     // Regulated industry premium
+            education: 0.85,      // Lower competition
+            consulting: 1.1,      // Professional services premium
+            manufacturing: 0.9,   // B2B industrial lower costs
+            other: 1.0           // Default multiplier
+        };
+
+        // *** AUDIENCE SIZE IMPACT - Updated 2025 data ***
+        const audienceSizeMultipliers = {
+            small: 1.3,     // Small audiences more expensive due to precision
+            medium: 1.0,    // Baseline performance
+            large: 0.8      // Larger audiences benefit from scale
+        };
+
+        function calculateBudget() {
+            const campaignType = document.querySelector('input[name="campaignType"]:checked').value;
+            const targetAudience = document.getElementById('targetAudience').value;
+            const industry = document.getElementById('industry').value;
+            const campaignDuration = parseInt(document.getElementById('campaignDuration').value) || 30;
+            const targetLeads = parseInt(document.getElementById('targetLeads').value) || 100;
+
+            // Get base benchmarks
+            const baseBenchmarks = benchmarks[campaignType];
+            const industryMultiplier = industryMultipliers[industry];
+            const audienceMultiplier = audienceSizeMultipliers[targetAudience];
+
+            // Calculate adjusted metrics using approved 2025 data
+            const adjustedCPM = baseBenchmarks.cpm * industryMultiplier * audienceMultiplier;
+            const adjustedCTR = baseBenchmarks.ctr * (1 / audienceMultiplier); // Smaller audiences = higher CTR
+            const adjustedCVR = baseBenchmarks.cvr * industryMultiplier;
+            
+            // Use direct CPC from benchmarks (more accurate than calculated)
+            const adjustedCPC = baseBenchmarks.cpc * industryMultiplier * audienceMultiplier;
+
+            // Calculate CPL using approved conversion rates
+            let cpl;
+			if (campaignType === 'awareness') {
+			// Hard-set CPL for Awareness to either \$230 or \$350
+			cpl = 230; // or switch to 350 if global
+			} else {
+			cpl = adjustedCPC / (adjustedCVR / 100);
+			}
+
+            // Calculate budget for target leads
+            const budgetForTargetLeads = targetLeads * cpl;
+            const dailyBudget = budgetForTargetLeads / campaignDuration;
+
+            // Calculate expected performance based on pipeline influence data
+            const totalBudget = dailyBudget * campaignDuration;
+            const expectedClicks = totalBudget / adjustedCPC;
+            const expectedLeads = expectedClicks * (adjustedCVR / 100);
+            const expectedImpressions = expectedClicks / (adjustedCTR / 100);
+
+            // Apply pipeline influence multiplier for more accurate lead prediction
+            const pipelineData = pipelineInfluence[campaignType];
+            const adjustedLeads = expectedLeads * (pipelineData.mql + pipelineData.sql + pipelineData.newbiz) / 3;
+
+            // Update UI
+            document.getElementById('dailyBudget').textContent = `${Math.round(dailyBudget)}`;
+            document.getElementById('totalBudget').textContent = `${Math.round(totalBudget).toLocaleString()}`;
+            document.getElementById('expectedImpressions').textContent = formatNumber(expectedImpressions);
+            document.getElementById('expectedClicks').textContent = Math.round(expectedClicks).toLocaleString();
+            document.getElementById('expectedLeads').textContent = Math.round(expectedLeads);
+            document.getElementById('costPerLead').textContent = `${Math.round(cpl)}`;
+
+            // Update benchmark text
+            updateBenchmarkText(campaignType, adjustedCPM, adjustedCTR, adjustedCVR);
+        }
+
+        function updateBenchmarkText(campaignType, cpm, ctr, cvr) {
+            const campaignNames = {
+                awareness: 'Brand Awareness',
+                leads: 'Lead Generation',
+                website: 'Website Visits',
+                engagement: 'Engagement'
+            };
+
+            const text = `${campaignNames[campaignType]} campaigns typically see CPM of ${cpm.toFixed(2)}, CTR of ${ctr.toFixed(2)}%, and conversion rates around ${cvr.toFixed(1)}%.`;
+            document.getElementById('benchmarkText').textContent = text;
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(0) + 'K';
+            }
+            return Math.round(num).toString();
+        }
+
+        // Add event listeners
+        document.querySelectorAll('input[name="campaignType"]').forEach(radio => {
+            radio.addEventListener('change', calculateBudget);
+        });
+
+        document.getElementById('targetAudience').addEventListener('change', calculateBudget);
+        document.getElementById('industry').addEventListener('change', calculateBudget);
+        document.getElementById('campaignDuration').addEventListener('input', calculateBudget);
+        document.getElementById('targetLeads').addEventListener('input', calculateBudget);
+
+        // Initial calculation
+        calculateBudget();
+    </script>
+</body>
+</html>
