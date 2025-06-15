@@ -318,150 +318,117 @@
         </div>
     </div>
 
-    <script>
-        // *** LEGAL-APPROVED BENCHMARKS - 2025 DATA ***
-        const benchmarks = {
-    awareness: { 
-        cpm: 57,
-        ctr: 0.50,    // 0.44-0.56%, using 0.50% as midpoint
-        cvr: 1.8,
-        cpc: 9
-    },
-    leads: { 
-        cpm: 62,
-        ctr: 0.50,    // 0.44-0.56%, using 0.50% as midpoint
-        cvr: 4.2,
-        cpc: 15
-    },
-    website: { 
-        cpm: 55,
-        ctr: 0.50,    // 0.44-0.56%, using 0.50% as midpoint
-        cvr: 2.5,
-        cpc: 8
-    },
-    engagement: { 
-        cpm: 52,
-        ctr: 0.65,    // 0.65%, with note for high performers
-        cvr: 2.1,
-        cpc: 7
+    
+<script>
+
+    // Benchmarks from Dreamdata report
+    const benchmarks = {
+        awareness: { cpm: 57, ctr: 0.50, cvr: 1.8, cpc: 9 },
+        leads: { cpm: 62, ctr: 0.50, cvr: 4.2, cpc: 15 },
+        website: { cpm: 55, ctr: 0.50, cvr: 2.5, cpc: 8 },
+        engagement: { cpm: 52, ctr: 0.65, cvr: 2.1, cpc: 7 }
+    };
+
+    // Industry multipliers for performance adjustments
+    const industryMultipliers = {
+        technology: 1.0,
+        finance: 1.25,
+        healthcare: 1.15,
+        education: 0.85,
+        consulting: 1.1,
+        manufacturing: 0.9,
+        other: 1.0
+    };
+
+    // Audience size multipliers affecting cost and performance
+    const audienceSizeMultipliers = {
+        small: 1.3,   // Small audiences are more expensive to target
+        medium: 1.0,  // Baseline multiplier
+        large: 0.8    // Larger audiences benefit from scale
+    };
+
+    function calculateBudget() {
+        const campaignType = document.querySelector('input[name="campaignType"]:checked').value;
+        const industry = document.getElementById('industry').value;
+        const targetAudience = document.getElementById('targetAudience').value;
+        const campaignDuration = parseInt(document.getElementById('campaignDuration').value) || 30;
+        const targetLeads = parseInt(document.getElementById('targetLeads').value) || 100;
+
+        // Get base metrics
+        const baseMetrics = benchmarks[campaignType];
+        const industryMultiplier = industryMultipliers[industry];
+        const audienceMultiplier = audienceSizeMultipliers[targetAudience];
+
+        // Adjust metrics dynamically
+        const adjustedCPM = baseMetrics.cpm * industryMultiplier * audienceMultiplier;
+        const adjustedCTR = baseMetrics.ctr * (1 / audienceMultiplier); // Smaller audiences usually have higher CTR
+        const adjustedCVR = baseMetrics.cvr * industryMultiplier;
+        const adjustedCPC = adjustedCPM / (adjustedCTR * 10); // Calculated CPC from CPM and CTR
+
+        // Calculate CPL and Total Budget
+        let cpl;
+        if (campaignType === 'awareness') {
+            // Special case for awareness CPL
+            cpl = 230; // Fixed CPL for awareness campaigns
+        } else {
+            cpl = adjustedCPC / (adjustedCVR / 100); // CPL based on CPC and CVR
+        }
+
+        const budgetForTargetLeads = targetLeads * cpl;
+        const dailyBudget = budgetForTargetLeads / campaignDuration;
+
+        // Performance metrics
+        const totalBudget = dailyBudget * campaignDuration;
+        const expectedClicks = totalBudget / adjustedCPC;
+        const expectedLeads = expectedClicks * (adjustedCVR / 100);
+        const expectedImpressions = expectedClicks / (adjustedCTR / 100);
+
+        // Update UI
+        updateResultsUI(dailyBudget, totalBudget, expectedImpressions, expectedClicks, expectedLeads, cpl);
+        updateBenchmarkText(campaignType, adjustedCPM, adjustedCTR, adjustedCVR);
     }
-};
 
-        // *** PERFORMANCE MULTIPLIERS BY CAMPAIGN TYPE ***
-        // Based on approved pipeline influence data
-        const pipelineInfluence = {
-            awareness: { mql: 0.29, sql: 0.36, newbiz: 0.35 },  // LinkedIn's pipeline influence
-            leads: { mql: 0.48, sql: 0.53, newbiz: 0.53 },      // Top quartile performance
-            website: { mql: 0.29, sql: 0.36, newbiz: 0.35 },    // Similar to awareness
-            engagement: { mql: 0.29, sql: 0.36, newbiz: 0.35 }  // Standard influence
+    function updateResultsUI(dailyBudget, totalBudget, impressions, clicks, leads, cpl) {
+        document.getElementById('dailyBudget').textContent = `$${Math.round(dailyBudget)}`;
+        document.getElementById('totalBudget').textContent = `$${Math.round(totalBudget).toLocaleString()}`;
+        document.getElementById('expectedImpressions').textContent = formatNumber(impressions);
+        document.getElementById('expectedClicks').textContent = Math.round(clicks).toLocaleString();
+        document.getElementById('expectedLeads').textContent = Math.round(leads);
+        document.getElementById('costPerLead').textContent = `$${Math.round(cpl)}`;
+    }
+
+    function updateBenchmarkText(campaignType, cpm, ctr, cvr) {
+        const campaignNames = {
+            awareness: 'Brand Awareness',
+            leads: 'Lead Generation',
+            website: 'Website Visits',
+            engagement: 'Engagement'
         };
+        const text = `${campaignNames[campaignType]} campaigns typically see CPM of $${cpm.toFixed(2)}, CTR of ${(ctr * 100).toFixed(2)}%, and conversion rates around ${(cvr).toFixed(1)}%.`;
+        document.getElementById('benchmarkText').textContent = text;
+    }
 
-        // *** INDUSTRY MULTIPLIERS - Based on 2025 data ***
-        const industryMultipliers = {
-            technology: 1.0,      // Baseline - tech sector
-            finance: 1.25,        // Higher competition in finance
-            healthcare: 1.15,     // Regulated industry premium
-            education: 0.85,      // Lower competition
-            consulting: 1.1,      // Professional services premium
-            manufacturing: 0.9,   // B2B industrial lower costs
-            other: 1.0           // Default multiplier
-        };
-
-        // *** AUDIENCE SIZE IMPACT - Updated 2025 data ***
-        const audienceSizeMultipliers = {
-            small: 1.3,     // Small audiences more expensive due to precision
-            medium: 1.0,    // Baseline performance
-            large: 0.8      // Larger audiences benefit from scale
-        };
-
-        function calculateBudget() {
-            const campaignType = document.querySelector('input[name="campaignType"]:checked').value;
-            const targetAudience = document.getElementById('targetAudience').value;
-            const industry = document.getElementById('industry').value;
-            const campaignDuration = parseInt(document.getElementById('campaignDuration').value) || 30;
-            const targetLeads = parseInt(document.getElementById('targetLeads').value) || 100;
-
-            // Get base benchmarks
-            const baseBenchmarks = benchmarks[campaignType];
-            const industryMultiplier = industryMultipliers[industry];
-            const audienceMultiplier = audienceSizeMultipliers[targetAudience];
-
-            // Calculate adjusted metrics using approved 2025 data
-            const adjustedCPM = baseBenchmarks.cpm * industryMultiplier * audienceMultiplier;
-            const adjustedCTR = baseBenchmarks.ctr * (1 / audienceMultiplier); // Smaller audiences = higher CTR
-            const adjustedCVR = baseBenchmarks.cvr * industryMultiplier;
-            
-            // Use direct CPC from benchmarks (more accurate than calculated)
-            const adjustedCPC = baseBenchmarks.cpc * industryMultiplier * audienceMultiplier;
-
-            // Calculate CPL using approved conversion rates
-            let cpl;
-			if (campaignType === 'awareness') {
-			// Hard-set CPL for Awareness to either \$230 or \$350
-			cpl = 230; // or switch to 350 if global
-			} else {
-			cpl = adjustedCPC / (adjustedCVR / 100);
-			}
-
-            // Calculate budget for target leads
-            const budgetForTargetLeads = targetLeads * cpl;
-            const dailyBudget = budgetForTargetLeads / campaignDuration;
-
-            // Calculate expected performance based on pipeline influence data
-            const totalBudget = dailyBudget * campaignDuration;
-            const expectedClicks = totalBudget / adjustedCPC;
-            const expectedLeads = expectedClicks * (adjustedCVR / 100);
-            const expectedImpressions = expectedClicks / (adjustedCTR / 100);
-
-            // Apply pipeline influence multiplier for more accurate lead prediction
-            const pipelineData = pipelineInfluence[campaignType];
-            const adjustedLeads = expectedLeads * (pipelineData.mql + pipelineData.sql + pipelineData.newbiz) / 3;
-
-            // Update UI
-            document.getElementById('dailyBudget').textContent = `${Math.round(dailyBudget)}`;
-            document.getElementById('totalBudget').textContent = `${Math.round(totalBudget).toLocaleString()}`;
-            document.getElementById('expectedImpressions').textContent = formatNumber(expectedImpressions);
-            document.getElementById('expectedClicks').textContent = Math.round(expectedClicks).toLocaleString();
-            document.getElementById('expectedLeads').textContent = Math.round(expectedLeads);
-            document.getElementById('costPerLead').textContent = `${Math.round(cpl)}`;
-
-            // Update benchmark text
-            updateBenchmarkText(campaignType, adjustedCPM, adjustedCTR, adjustedCVR);
+    function formatNumber(num) {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+            return (num / 1000).toFixed(0) + 'K';
         }
+        return Math.round(num).toString();
+    }
 
-        function updateBenchmarkText(campaignType, cpm, ctr, cvr) {
-            const campaignNames = {
-                awareness: 'Brand Awareness',
-                leads: 'Lead Generation',
-                website: 'Website Visits',
-                engagement: 'Engagement'
-            };
+    // Event listeners
+    document.querySelectorAll('input[name="campaignType"]').forEach(radio => {
+        radio.addEventListener('change', calculateBudget);
+    });
+    document.getElementById('targetAudience').addEventListener('change', calculateBudget);
+    document.getElementById('industry').addEventListener('change', calculateBudget);
+    document.getElementById('campaignDuration').addEventListener('input', calculateBudget);
+    document.getElementById('targetLeads').addEventListener('input', calculateBudget);
 
-            const text = `${campaignNames[campaignType]} campaigns typically see CPM of ${cpm.toFixed(2)}, CTR of ${ctr.toFixed(2)}%, and conversion rates around ${cvr.toFixed(1)}%.`;
-            document.getElementById('benchmarkText').textContent = text;
-        }
+    // Initial calculation
+    calculateBudget();
 
-        function formatNumber(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(1) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(0) + 'K';
-            }
-            return Math.round(num).toString();
-        }
-
-        // Add event listeners
-        document.querySelectorAll('input[name="campaignType"]').forEach(radio => {
-            radio.addEventListener('change', calculateBudget);
-        });
-
-        document.getElementById('targetAudience').addEventListener('change', calculateBudget);
-        document.getElementById('industry').addEventListener('change', calculateBudget);
-        document.getElementById('campaignDuration').addEventListener('input', calculateBudget);
-        document.getElementById('targetLeads').addEventListener('input', calculateBudget);
-
-        // Initial calculation
-        calculateBudget();
-    </script>
+</script>
 </body>
 </html>
